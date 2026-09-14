@@ -6,7 +6,6 @@ import pandas as pd
 # VISÃO GERAL
 # =========================
 
-# con = get_connection()
 
 def total_obitos(con) -> int:
     resultado = con.sql("""
@@ -78,6 +77,36 @@ def obitos_por_idade(con) -> pd.DataFrame:
         ORDER BY idade_anos
     """).df()
 
+def obitos_por_faixa_etaria(con) -> pd.DataFrame:
+
+    return con.sql("""
+        SELECT
+            CASE
+                WHEN idade_anos < 1 THEN 'Menor de 1 ano'
+                WHEN idade_anos BETWEEN 1 AND 4 THEN '1 a 4 anos'
+                WHEN idade_anos BETWEEN 5 AND 14 THEN '5 a 14 anos'
+                WHEN idade_anos BETWEEN 15 AND 24 THEN '15 a 24 anos'
+                WHEN idade_anos BETWEEN 25 AND 44 THEN '25 a 44 anos'
+                WHEN idade_anos BETWEEN 45 AND 64 THEN '45 a 64 anos'
+                WHEN idade_anos >= 65 THEN '65 anos ou mais'
+                ELSE 'Ignorado'
+            END AS faixa_etaria,
+            COUNT(*) AS obitos
+        FROM sim
+        GROUP BY faixa_etaria
+        ORDER BY
+            CASE faixa_etaria
+                WHEN 'Menor de 1 ano' THEN 1
+                WHEN '1 a 4 anos' THEN 2
+                WHEN '5 a 14 anos' THEN 3
+                WHEN '15 a 24 anos' THEN 4
+                WHEN '25 a 44 anos' THEN 5
+                WHEN '45 a 64 anos' THEN 6
+                WHEN '65 anos ou mais' THEN 7
+                ELSE 8
+            END
+    """).df()
+
 
 # =========================
 # CAUSAS
@@ -99,6 +128,70 @@ def top_causas(
         GROUP BY CAUSABAS
         ORDER BY obitos DESC
         LIMIT {limite}
+    """).df()
+
+
+def causas_por_sexo(
+        con,
+        limite) -> pd.DataFrame:
+
+    return con.sql(f"""
+        SELECT
+            CAUSABAS,
+            SEXO,
+            COUNT(*) AS obitos
+        FROM sim
+        WHERE
+            CAUSABAS IS NOT NULL
+            AND SEXO IS NOT NULL
+        GROUP BY
+            CAUSABAS,
+            SEXO
+        ORDER BY
+            CAUSABAS,
+            obitos DESC
+        LIMIT {limite}
+    """).df()
+
+
+def causas_por_ano(
+    con,
+    limite: int = 10,
+) -> pd.DataFrame:
+
+    return con.sql(f"""
+        WITH top AS (
+
+            SELECT
+                CAUSABAS,
+                COUNT(*) AS total
+            FROM sim
+            WHERE CAUSABAS IS NOT NULL
+            GROUP BY CAUSABAS
+            ORDER BY total DESC
+            LIMIT {limite}
+
+        )
+
+        SELECT
+            YEAR(s.DTOBITO) AS ano,
+            s.CAUSABAS,
+            COUNT(*) AS obitos
+
+        FROM sim s
+
+        INNER JOIN top
+            ON s.CAUSABAS = top.CAUSABAS
+
+        WHERE s.DTOBITO IS NOT NULL
+
+        GROUP BY
+            ano,
+            s.CAUSABAS
+
+        ORDER BY
+            ano,
+            obitos DESC
     """).df()
 
 # =========================
