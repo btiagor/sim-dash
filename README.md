@@ -23,8 +23,6 @@ Construir uma aplicação para visualização e análise dos óbitos registrados
 | DuckDB | Banco analítico local |
 | Pandas | Manipulação dos dados |
 | Plotly | Visualizações interativas |
-| uv | Gerenciamento do ambiente e dependências |
-| Jupyter Notebook | Exploração inicial dos dados |
 
 ## Estrutura do projeto
 
@@ -53,7 +51,6 @@ sim-dash/
 │       └── sim.duckdb
 │
 ├── pyproject.toml
-├── uv.lock
 ├── README.md
 └── .gitignore
 ```
