@@ -39,6 +39,20 @@ with st.sidebar:
         ],
     )
 
+    itens = [
+        "Camila Xavier de Melo Morais",
+        "Cauã Sebastian Ferreira Barbosa",
+        "Maria Clara Macena Farias",
+        "Tiago Bezerra Brito Ramos",
+        "Tiago Tenório Cavalcanti Batista Filho"
+        ]
+
+    with st.sidebar:
+        st.write("### Grupo:")
+        # O loop percorre a lista de trás para frente
+        for item in itens:
+            st.write(item)
+
 
 # ============================================================
 # NAVEGAÇÃO

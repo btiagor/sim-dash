@@ -99,30 +99,56 @@ def mostrar_causas():
             "Principais causas por sexo"
         )
 
+        df_plot = df_sexo[
+            df_sexo["DS_CAUSABAS"].isin(
+                df_causas["CAUSABAS"]
+            )
+        ].copy()
+
+        # Garante que a descrição seja tratada como texto
+        df_plot["DS_CAUSABAS"] = (
+            df_plot["DS_CAUSABAS"]
+            .astype("string")
+            .str.strip()
+        )
+
+        # Ordem das causas pelo total de óbitos
+        ordem = (
+            df_plot
+            .groupby("DS_CAUSABAS")["obitos"]
+            .sum()
+            .sort_values()
+            .index
+            .tolist()
+        )
+
         fig = px.bar(
-            df_sexo[
-                df_sexo["CAUSABAS"].isin(
-                    df_causas["CAUSABAS"]
-                )
-            ],
-            x="CAUSABAS",
-            y="obitos",
+            df_plot,
+            x="obitos",
+            y="DS_CAUSABAS",
             color="SEXO",
+            orientation="h",
             barmode="group",
+            category_orders={
+                "DS_CAUSABAS": ordem
+            },
             labels={
-                "CAUSABAS": "Causa básica",
+                "DS_CAUSABAS": "Causa básica",
                 "obitos": "Óbitos",
                 "SEXO": "Sexo",
             },
         )
 
         fig.update_layout(
-            height=450,
+            height=600,
             margin=dict(
                 l=20,
                 r=20,
                 t=20,
                 b=20,
+            ),
+            yaxis=dict(
+                type="category"
             ),
         )
 

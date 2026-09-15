@@ -39,10 +39,10 @@ def obitos_por_sexo(con) -> pd.DataFrame:
 
     return con.sql("""
         SELECT
-            SEXO,
+            DS_SEXO AS SEXO,
             COUNT(*) AS obitos
         FROM sim
-        GROUP BY SEXO
+        GROUP BY DS_SEXO
         ORDER BY obitos DESC
     """).df()
 
@@ -54,10 +54,10 @@ def obitos_por_raca(con) -> pd.DataFrame:
 
     return con.sql("""
         SELECT
-            RACACOR,
+            DS_RACACOR AS RACACOR,
             COUNT(*) AS obitos
         FROM sim
-        GROUP BY RACACOR
+        GROUP BY DS_RACACOR
         ORDER BY obitos DESC
     """).df()
 
@@ -122,36 +122,44 @@ def top_causas(
 
     return con.sql(f"""
         SELECT
-            CAUSABAS,
+            DS_CAUSABAS AS CAUSABAS,
             COUNT(*) AS obitos
         FROM sim
-        GROUP BY CAUSABAS
+        GROUP BY DS_CAUSABAS
         ORDER BY obitos DESC
         LIMIT {limite}
     """).df()
 
 
-def causas_por_sexo(
-        con,
-        limite) -> pd.DataFrame:
+def causas_por_sexo(con, limite=10):
 
     return con.sql(f"""
+        WITH top_causas AS (
+            SELECT
+                DS_CAUSABAS,
+                COUNT(*) AS total
+            FROM sim
+            WHERE DS_CAUSABAS IS NOT NULL
+            GROUP BY DS_CAUSABAS
+            ORDER BY total DESC
+            LIMIT {limite}
+        )
+
         SELECT
-            CAUSABAS,
-            SEXO,
+            CAST(s.DS_CAUSABAS AS VARCHAR) AS DS_CAUSABAS,
+            CAST(s.DS_SEXO AS VARCHAR) AS SEXO,
             COUNT(*) AS obitos
-        FROM sim
-        WHERE
-            CAUSABAS IS NOT NULL
-            AND SEXO IS NOT NULL
+        FROM sim s
+        INNER JOIN top_causas t
+            ON s.DS_CAUSABAS = t.DS_CAUSABAS
+        WHERE s.SEXO IS NOT NULL
         GROUP BY
-            CAUSABAS,
-            SEXO
+            s.DS_CAUSABAS,
+            s.DS_SEXO
         ORDER BY
-            CAUSABAS,
             obitos DESC
-        LIMIT {limite}
     """).df()
+
 
 
 def causas_por_ano(
@@ -205,10 +213,10 @@ def obitos_por_municipio_residencia(con) -> pd.DataFrame:
 
     return con.sql("""
         SELECT
-            CODMUNRES,
+            CAST(CODMUNRES AS VARCHAR) AS CODMUNRES,
             COUNT(*) AS obitos
         FROM sim
-        GROUP BY CODMUNRES
+        GROUP BY CAST(CODMUNRES AS VARCHAR)
         ORDER BY obitos DESC
     """).df()
 
@@ -220,10 +228,10 @@ def obitos_por_municipio_ocorrencia(con) -> pd.DataFrame:
 
     return con.sql("""
         SELECT
-            CODMUNOCOR,
+            CAST(CODMUNOCOR AS VARCHAR) AS CODMUNOCOR,
             COUNT(*) AS obitos
         FROM sim
-        GROUP BY CODMUNOCOR
+        GROUP BY CAST(CODMUNOCOR AS VARCHAR)
         ORDER BY obitos DESC
     """).df()
 
@@ -245,3 +253,4 @@ def fluxo_residencia_ocorrencia(con) -> pd.DataFrame:
             CODMUNOCOR
         ORDER BY obitos DESC
     """).df()
+
