@@ -1,6 +1,6 @@
 # Dashboard SIM — Sistema de Informação sobre Mortalidade
 
-Dashboard para exploração e análise dos dados do **Sistema de Informação sobre Mortalidade (SIM)**, desenvolvido com **Python**, **Streamlit**, **DuckDB**, **Pandas**, **Plotly** e **uv**.
+Dashboard para exploração e análise dos dados do **Sistema de Informação sobre Mortalidade (SIM)**, desenvolvido com **Python**, **Streamlit**, **DuckDB**, **Pandas** e **Plotly**.
 
 ## Objetivo
 
@@ -43,6 +43,7 @@ sim-dash/
 │
 ├── ingestion_sim.py
 ├── transformation_sim.py
+├── importar_sim.py
 │
 ├── data/
 │   ├── raw/
@@ -50,7 +51,7 @@ sim-dash/
 │   └── database/
 │       └── sim.duckdb
 │
-├── pyproject.toml
+├── requirements.txt
 ├── README.md
 └── .gitignore
 ```
@@ -65,6 +66,7 @@ sim-dash/
 - **`queries.py`** — consultas SQL executadas no DuckDB.
 - **`ingestion_sim.py`** — leitura/entrada da base do SIM.
 - **`transformation_sim.py`** — limpeza e transformação dos dados.
+- **`importar_sim.py`** — script para orquestrar a importação dos dados para o banco.
 - **`database/duckdb.py`** — conexão e operações relacionadas ao DuckDB.
 
 ## Fluxo de dados
@@ -172,38 +174,43 @@ Análises de:
 - óbitos fora do município de residência;
 - mapas temáticos.
 
-## Instalação
+## Como Executar o Projeto
 
-O projeto utiliza `uv`.
+Siga os passos abaixo para configurar o ambiente, importar os dados e rodar o projeto na sua máquina:
 
-Na raiz do projeto:
+### 1. Criar e Ativar o Ambiente Virtual (venv)
 
-```bash
-uv sync
-```
+Na raiz do projeto, crie o ambiente virtual e ative-o:
 
-## Execução do dashboard
+- **No Linux / macOS:**
+  ```bash
+  python3 -m venv .venv
+  source .venv/bin/activate
+  ```
 
-```bash
-uv run streamlit run app.py
-```
+- **No Windows (PowerShell / CMD):**
+  ```bash
+  python -m venv .venv
+  .venv\Scripts\activate
+  ```
 
-O Streamlit normalmente estará disponível em:
+### 2. Instalar as Dependências
 
-```text
-http://localhost:8501
-```
-
-## Importação da base
-
-Para executar o processo de importação:
+Com o ambiente virtual ativado, instale os pacotes listados no `requirements.txt`:
 
 ```bash
-uv run python importar_sim.py
+pip install -r requirements.txt
 ```
 
-Fluxo esperado:
+### 3. Importar a Base de Dados
 
+Execute o script de importação para processar a planilha bruta e gerar o banco DuckDB (`sim.duckdb`):
+
+```bash
+python importar_sim.py
+```
+
+Fluxo esperado da importação:
 ```text
 base_sim_do.xlsx
        ↓
@@ -212,6 +219,19 @@ ingestion_sim.py
 transformation_sim.py
        ↓
 sim.duckdb
+```
+
+### 4. Executar o Dashboard (Streamlit)
+
+Com os dados devidamente importados, inicie a aplicação Streamlit:
+
+```bash
+streamlit run app.py
+```
+
+O painel estará disponível no navegador através do endereço:
+```text
+http://localhost:8501
 ```
 
 ## Desenvolvimento
@@ -223,7 +243,7 @@ Entrada dos dados       → ingestion_sim.py
 Tratamento              → transformation_sim.py
 Banco                   → database/duckdb.py
 Consultas SQL           → queries.py
-Visualizações            → app_*.py
+Visualizações           → app_*.py
 Navegação               → app.py
 ```
 
@@ -240,20 +260,6 @@ O Jupyter Notebook pode ser utilizado para:
 - prototipar visualizações.
 
 Depois de validadas, as regras devem ser migradas para os módulos Python.
-
-```text
-Notebook
-   ↓
-Exploração
-   ↓
-Validação
-   ↓
-Código Python
-   ↓
-Pipeline
-   ↓
-Dashboard
-```
 
 ## Próximas etapas
 
